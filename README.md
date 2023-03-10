@@ -24,4 +24,4 @@ Please ensure that your code adheres to the existing coding style and that your 
 
 ## License
 
-Nomia is licensed under the [MIT License](https://github.com/example/nomia/blob/main/LICENSE).
+Nomia is licensed under the [MIT License](https://github.com/DHCPCD9/Nomia/blob/main/LICENSE).
