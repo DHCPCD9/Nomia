@@ -1,6 +1,6 @@
 # Nomia
 
-Nomia is a lightweight and easy-to-use Lavalink wrapper that simplifies the process of integrating Lavalink audio playback into your Discord bot, allowing you to focus on creating great user experiences. Nomia supports the Lavalink REST API V3, making it compatible with a wide range of Lavalink server implementations.
+Nomia is a lightweight and easy-to-use Lavalink wrapper that simplifies the process of integrating Lavalink audio playback into your Discord bot, allowing you to focus on creating great user experiences. 
 
 ## Features
 
