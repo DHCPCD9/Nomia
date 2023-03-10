@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nomia", "Nomia\Nomia.csproj", "{A0B7C641-5348-4F06-8C86-D398542EFDFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nomia.Websocket", "Nomia.Websocket\Nomia.Websocket.csproj", "{05C63340-23C0-4C6E-B4E5-3BF46FD83C90}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A0B7C641-5348-4F06-8C86-D398542EFDFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0B7C641-5348-4F06-8C86-D398542EFDFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0B7C641-5348-4F06-8C86-D398542EFDFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0B7C641-5348-4F06-8C86-D398542EFDFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05C63340-23C0-4C6E-B4E5-3BF46FD83C90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05C63340-23C0-4C6E-B4E5-3BF46FD83C90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05C63340-23C0-4C6E-B4E5-3BF46FD83C90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05C63340-23C0-4C6E-B4E5-3BF46FD83C90}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
