@@ -130,8 +130,10 @@
         <Compile Include="Entities\Filters\LavalinkTremoloFilter.cs" />
         <Compile Include="Entities\Filters\LavalinkVibratoFilter.cs" />
         <Compile Include="Entities\LavalinkEqualizerTypes.cs" />
+        <Compile Include="Entities\LavalinkEventType.cs" />
         <Compile Include="Entities\LavalinkNodeReadyPayload.cs" />
         <Compile Include="Entities\LavalinkPlayer.cs" />
+        <Compile Include="Entities\LavalinkStats.cs" />
         <Compile Include="Entities\LavalinkTrack.cs" />
         <Compile Include="Entities\VoiceDispatch.cs" />
         <Compile Include="Entities\VoiceStateUpdatePayload.cs" />
@@ -139,8 +141,16 @@
         <Compile Include="EventArgs\LavalinkNodeConnectedEventArgs.cs" />
         <Compile Include="EventArgs\LavalinkNodeDisconnectedEventArgs.cs" />
         <Compile Include="EventArgs\LavalinkNodeReadyEventArgs.cs" />
+        <Compile Include="EventArgs\Player\PlaybackExceptionEventArgs.cs" />
+        <Compile Include="EventArgs\Player\PlaybackFinishedEventArgs.cs" />
+        <Compile Include="EventArgs\Player\PlaybackStartedEventArgs.cs" />
+        <Compile Include="EventArgs\Player\PlaybackStuckEventArgs.cs" />
+        <Compile Include="EventArgs\Player\PlayerInternalError.cs" />
+        <Compile Include="EventArgs\Player\PlayerUpdateEventArgs.cs" />
+        <Compile Include="EventArgs\Player\PlayerWebsocketClosedEventArgs.cs" />
         <Compile Include="LavalinkEndpoints.cs" />
         <Compile Include="LavalinkGuildConnection.cs" />
+        <Compile Include="LavalinkUtils.cs" />
         <Compile Include="NomiaEvents.cs" />
         <Compile Include="NomiaExtension.cs" />
         <Compile Include="NomiaNode.cs" />

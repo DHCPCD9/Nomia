@@ -265,3 +265,37 @@ public class LavalinkUpdateSessionPayload
     [JsonProperty("timeout")]
     public int Timeout { get; internal set; }
 }
+
+public class LavalinkPlayerState
+{
+    [JsonProperty("time")]
+    internal int time;
+    
+    /// <summary>
+    /// Time when the update was sent
+    /// </summary>
+    public DateTimeOffset Time => DateTimeOffset.UtcNow.AddMilliseconds(-time);
+
+
+
+    [JsonProperty("position")] internal int Position { get; }
+    
+    /// <summary>
+    /// The position of the track in milliseconds
+    /// </summary>
+    public TimeSpan PositionTimeSpan => TimeSpan.FromMilliseconds(Position);
+
+    /// <summary>
+    /// If Lavalink is connected to the voice gateway
+    /// </summary>
+    [JsonIgnore]
+    [JsonProperty("connected")]
+    public bool Connected { get; internal set; }
+    
+    /// <summary>
+    /// The ping of the node to the Discord voice server in milliseconds (-1 if not connected)
+    /// </summary>
+    [JsonIgnore]
+    [JsonProperty("ping")]
+    public int Ping { get; internal set; }
+}

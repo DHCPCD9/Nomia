@@ -9,8 +9,10 @@ using DSharpPlus.EventArgs;
 using Emzi0767.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Nomia.Entities;
 using Nomia.EventArgs;
+using Nomia.EventArgs.Player;
 using Nomia.Websocket;
 using Nomia.Websocket.EventArgs;
 
@@ -129,6 +131,16 @@ namespace Nomia
         /// </summary>
         public bool IsReady { get; set; }
         
+        /// <summary>
+        /// Stats of the node.
+        /// </summary>
+        public LavalinkStats Stats { get; set; }
+        
+        /// <summary>
+        /// Gets the discord client.
+        /// </summary>
+        internal DiscordClient Discord { get; }
+        
         internal NomiaNodeRest Rest { get; }
 
         private readonly AsyncEvent<NomiaNode, LavalinkClientExceptionEventArgs> _onException;
@@ -137,9 +149,7 @@ namespace Nomia
         private readonly AsyncEvent<NomiaNode, LavalinkNodeDisconnectedEventArgs> _onDisconnected;
         
         private readonly AsyncEvent<NomiaNode, LavalinkNodeReadyEventArgs> _onReady;
-        
-        public DiscordClient Discord { get; }
-        
+
         private Dictionary<ulong, TaskCompletionSource<VoiceServerUpdateEventArgs>> _voiceServerUpdateTasks =
             new();
         private Dictionary<ulong, TaskCompletionSource<VoiceStateUpdateEventArgs>> _voiceStateUpdateTasks =
@@ -177,11 +187,99 @@ namespace Nomia
             _websocket.OnConnected += websocketOnOnConnected;
             
             _websocket.RegisterOp<LavalinkNodeReadyPayload>("ready", Websocket_NodeReady);
+            _websocket.RegisterOp("event", Websocket_LavalinkEvent);
+            _websocket.RegisterOp("playerUpdate", Websocket_PlayerUpdate);
+            _websocket.RegisterOp<LavalinkStats>("stats", Websocket_Stats);
             
             discord.VoiceServerUpdated += Discord_ClientOnVoiceServerUpdated;
             discord.VoiceStateUpdated += Discord_ClientOnVoiceStateUpdated;
         }
-        
+
+        private async Task Websocket_Stats(LavalinkStats stats)
+        {
+            Stats = stats;
+        }
+
+        private async Task Websocket_PlayerUpdate(object arg)
+        {
+            var jObject = JObject.Parse(JsonConvert.SerializeObject(arg));
+            
+            var guildId = jObject["guildId"].Value<ulong>();
+            
+            if (!Connections.TryGetValue(guildId, out var connection))
+            {
+                return;
+            }
+            
+            var state = jObject["state"].ToObject<LavalinkPlayerState>();
+            
+            connection.State = state;
+            
+            return;
+        }
+
+        private async Task Websocket_LavalinkEvent(object arg)
+        {
+            var jObject = JObject.Parse(JsonConvert.SerializeObject(arg));
+            
+            var guildId = jObject["guildId"].Value<ulong>();
+            
+            if (!Connections.TryGetValue(guildId, out var connection))
+            {
+                throw new InvalidOperationException("Connection not found");
+            }
+            var typeRaw = jObject["type"].Value<string>();
+            Enum.TryParse(typeRaw, true, out LavalinkEventType type);
+
+            if (type == LavalinkEventType.TrackStartEvent)
+            {
+                var track = jObject["encodedTrack"].Value<string>();
+                
+                var trackInfo = LavalinkUtils.DecodeTrack(track);
+                
+                connection?._onTrackStart.InvokeAsync(connection, new PlaybackStartedEventArgs(trackInfo));
+            }
+            
+            if (type == LavalinkEventType.TrackEndEvent)
+            {
+                var track = jObject["encodedTrack"].Value<string>();
+                var reasonRaw = jObject["reason"].Value<string>();
+                Enum.TryParse(reasonRaw, true, out LavalinkTrackEndReason reason);
+                
+                var trackInfo = LavalinkUtils.DecodeTrack(track);
+                
+                connection?._onTrackFinish.InvokeAsync(connection, new PlaybackFinishedEventArgs(trackInfo, reason));
+            }
+            
+            if (type == LavalinkEventType.TrackExceptionEvent)
+            {
+                var track = jObject["encodedTrack"].Value<string>();
+                var error = jObject["exception"].Value<LavalinkException>();
+                
+                var trackInfo = LavalinkUtils.DecodeTrack(track);
+                
+                connection?._onTrackException.InvokeAsync(connection, new PlaybackExceptionEventArgs(trackInfo, error));
+            }
+            
+            if (type == LavalinkEventType.TrackStuckEvent)
+            {
+                var track = jObject["encodedTrack"].Value<string>();
+                var threshold = jObject["thresholdMs"].Value<int>();
+                
+                var trackInfo = LavalinkUtils.DecodeTrack(track);
+                
+                connection?._onTrackStuck.InvokeAsync(connection, new PlaybackStuckEventArgs(trackInfo, threshold));
+            }
+            
+            if (type == LavalinkEventType.WebSocketClosedEvent)
+            {
+                var code = jObject["code"].Value<int>();
+                var reason = jObject["reason"].Value<string>();
+                
+                connection?._onPlayerWebsocketClosed.InvokeAsync(connection, new PlayerWebsocketClosedEventArgs(code, reason));
+            }
+        }
+
         /// <summary>
         /// No way...
         /// </summary>
