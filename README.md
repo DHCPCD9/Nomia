@@ -9,6 +9,9 @@ Nomia is a lightweight and easy-to-use Lavalink wrapper that simplifies the proc
 - Simplifies the process of integrating Lavalink audio playback into your Discord bot.
 - Written in C# for .NET Core.
 
+## Why? 
+IDK
+
 ## Contributing
 
 Thank you for considering contributing to Nomia! Here are a few guidelines to get started:
