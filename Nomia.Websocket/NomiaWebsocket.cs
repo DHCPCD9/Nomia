@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Emzi0767;
 using Emzi0767.Utilities;
 using Newtonsoft.Json.Linq;
+using Nomia.Websocket.Entities;
 using Nomia.Websocket.EventArgs;
 using Websocket.Client;
 using Websocket.Client.Models;
@@ -20,7 +22,7 @@ namespace Nomia.Websocket
         /// <summary>
         /// Whether the websocket is connected.
         /// </summary>
-        public bool IsConnected => _websocket.IsRunning;
+        public bool IsConnected => websocket is not null && websocket.IsRunning;
         /// <summary>
         /// OP code key for handling messages.
         /// </summary>
@@ -36,8 +38,8 @@ namespace Nomia.Websocket
         /// </summary>
         public Dictionary<string, string> Headers { get; } = new();
 
-        private readonly Dictionary<string, Func<object, Task>> _handlers = new();
-        private readonly WebsocketClient _websocket;
+        private readonly Dictionary<string, INomiaHandlerEntry> _handlers = new();
+        private WebsocketClient websocket;
         
         /// <summary>
         /// Creates a new instance of <see cref="NomiaWebsocket"/>.
@@ -47,7 +49,6 @@ namespace Nomia.Websocket
         public NomiaWebsocket(Uri uri)
         {
             Uri = uri ?? throw new ArgumentNullException(nameof(uri));
-            _websocket = new WebsocketClient(uri);
         }
         
         /// <summary>
@@ -114,12 +115,22 @@ namespace Nomia.Websocket
         /// </summary>
         public async Task ConnectAsync()
         {
-            _websocket.ReconnectTimeout = TimeSpan.FromSeconds(30);
-            _websocket.ReconnectionHappened.Subscribe(InternalOnReconnected);
-            _websocket.DisconnectionHappened.Subscribe(InternalOnDisconnected);
-            _websocket.MessageReceived.Subscribe(InternalOnMessage);
+            var factory = new Func<ClientWebSocket>(() =>
+            {
+                var client = new ClientWebSocket();
+                foreach (var (key, value) in Headers)
+                {
+                    client.Options.SetRequestHeader(key, value);
+                }
+                return client;
+            });
+            websocket = new WebsocketClient(Uri, factory);
+            websocket.ReconnectTimeout = null; //Disable weird reconnect timeout
+            websocket.ReconnectionHappened.Subscribe(InternalOnReconnected);
+            websocket.DisconnectionHappened.Subscribe(InternalOnDisconnected);
+            websocket.MessageReceived.Subscribe(InternalOnMessage);
             
-            await _websocket.Start().ConfigureAwait(false);
+            await websocket.Start().ConfigureAwait(false);
         }
 
         private void InternalOnDisconnected(DisconnectionInfo disconnectionInfo)
@@ -144,11 +155,16 @@ namespace Nomia.Websocket
                     return;
                 }
                 
+                
                 var op = jObject[OpParam].ToString();
+                
+                
                 
                 if (_handlers.ContainsKey(op))
                 {
-                    _handlers[op].Invoke(jObject);
+                    var handler = _handlers[op];
+                    var obj = jObject.ToObject(handler.Type);
+                    handler.Handler(obj);
                 }
             }
             
@@ -163,9 +179,9 @@ namespace Nomia.Websocket
         /// <typeparam name="T">Type of the object.</typeparam>
         public void RegisterOp<T>(string op, Func<T, Task> handler)
         {
-            _handlers.Add(op, async (obj) =>
+            _handlers.Add(op, new NomiaHandlerEntry<T>
             {
-                await handler.Invoke((T) obj);
+                Handler = (obj) => handler((T) obj)
             });
         }
         
@@ -176,7 +192,10 @@ namespace Nomia.Websocket
         /// <param name="handler">Handler for the op code.</param>
         public void RegisterOp(string op, Func<object, Task> handler)
         {
-            _handlers.Add(op, handler);
+            _handlers.Add(op, new NomiaHandlerEntry<object>
+            {
+                Handler = handler
+            });
         }
         
         /// <summary>
@@ -198,7 +217,7 @@ namespace Nomia.Websocket
         
         public void Dispose()
         {
-            _websocket?.Dispose();
+            websocket?.Dispose();
         }
     }
 }

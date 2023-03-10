@@ -102,6 +102,7 @@
         <Reference Include="WindowsBase" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Entities\NomiaHandlerEntry.cs" />
         <Compile Include="EventArgs\WebsocketConnectedEventArgs.cs" />
         <Compile Include="EventArgs\WebsocketDisconnectedEventArgs.cs" />
         <Compile Include="EventArgs\WebsocketMessageEventArgs.cs" />
