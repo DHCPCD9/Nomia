@@ -214,8 +214,6 @@ namespace Nomia
             var state = jObject["state"].ToObject<LavalinkPlayerState>();
             
             connection.State = state;
-            
-            return;
         }
 
         private async Task Websocket_LavalinkEvent(object arg)
