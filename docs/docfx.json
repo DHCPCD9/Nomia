@@ -3,15 +3,15 @@
     {
       "src": [
         {
-          "src": "../",
           "files": [
-            "**/*.csproj"
+            "**.csproj"
           ],
           "exclude": [
             "**/bin/**",
             "**/obj/**",
             "_site/**"
-          ]
+          ],
+          "src": ".."
         }
       ],
       "dest": "api",
