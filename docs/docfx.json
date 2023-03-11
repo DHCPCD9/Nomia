@@ -4,10 +4,13 @@
       "src": [
         {
           "src": "../",
-          "files": "**/bin/**/**.dll",
+          "files": [
+            "**/*.csproj"
+          ],
           "exclude": [
-              "**/obj/**",
-              "_site/**"
+            "**/bin/**",
+            "**/obj/**",
+            "_site/**"
           ]
         }
       ],
