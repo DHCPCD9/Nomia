@@ -1,4 +1,5 @@
 # Nomia
+![](https://img.shields.io/nuget/v/Nomia)
 
 Nomia is a lightweight and easy-to-use Lavalink wrapper that simplifies the process of integrating Lavalink audio playback into your Discord bot, allowing you to focus on creating great user experiences. 
 
