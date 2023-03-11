@@ -35,7 +35,18 @@ public class Commands : BaseCommandModule
 
         try
         {
-            await node.ConnectAsync(voiceChannel);
+            var player = await node.ConnectAsync(voiceChannel);
+            player.OnTrackStart += (sender, args) =>
+            {
+                ctx.Channel.SendMessageAsync($"Track started: {args.Track.Info}");
+                return Task.CompletedTask;
+            };
+            
+            player.OnTrackFinish += (sender, args) =>
+            {
+                ctx.Channel.SendMessageAsync($"Track finished: {args.Track.Info} - {args.EndReason}");
+                return Task.CompletedTask;
+            };
         }
         catch (Exception e)
         {

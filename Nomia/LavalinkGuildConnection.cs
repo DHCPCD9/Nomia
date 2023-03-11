@@ -96,6 +96,13 @@ public class LavalinkGuildConnection : IDisposable
         Filters = new List<ILavalinkFilter>();
         
         _onTrackStart = new AsyncEvent<LavalinkGuildConnection, PlaybackStartedEventArgs>("ON_TRACK_START", TimeSpan.Zero, ConnectionErrorHandler);
+        _onTrackFinish = new AsyncEvent<LavalinkGuildConnection, PlaybackFinishedEventArgs>("ON_TRACK_FINISH", TimeSpan.Zero, ConnectionErrorHandler);
+        _onTrackException = new AsyncEvent<LavalinkGuildConnection, PlaybackExceptionEventArgs>("ON_TRACK_EXCEPTION", TimeSpan.Zero, ConnectionErrorHandler);
+        _onTrackStuck = new AsyncEvent<LavalinkGuildConnection, PlaybackStuckEventArgs>("ON_TRACK_STUCK", TimeSpan.Zero, ConnectionErrorHandler);
+        _onPlayerUpdate = new AsyncEvent<LavalinkGuildConnection, PlayerUpdateEventArgs>("ON_PLAYER_UPDATE", TimeSpan.Zero, ConnectionErrorHandler);
+        _onPlayerWebsocketClosed = new AsyncEvent<LavalinkGuildConnection, PlayerWebsocketClosedEventArgs>("ON_PLAYER_WEBSOCKET_CLOSED", TimeSpan.Zero, ConnectionErrorHandler);
+        _onPlayerError = new AsyncEvent<LavalinkGuildConnection, PlayerInternalError>("ON_PLAYER_ERROR", TimeSpan.Zero, ConnectionErrorHandler);
+        
     }
 
     private void ConnectionErrorHandler<T>(AsyncEvent<LavalinkGuildConnection, T> asyncevent, Exception exception, AsyncEventHandler<LavalinkGuildConnection, T> handler, LavalinkGuildConnection sender, T eventargs) where T : AsyncEventArgs

@@ -269,12 +269,12 @@ public class LavalinkUpdateSessionPayload
 public class LavalinkPlayerState
 {
     [JsonProperty("time")]
-    internal int time;
+    internal long _time;
     
     /// <summary>
     /// Time when the update was sent
     /// </summary>
-    public DateTimeOffset Time => DateTimeOffset.UtcNow.AddMilliseconds(-time);
+    public DateTimeOffset Time => DateTimeOffset.FromUnixTimeMilliseconds(_time);
 
 
 

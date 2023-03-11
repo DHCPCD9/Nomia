@@ -125,6 +125,7 @@ namespace Nomia.Websocket
                 return client;
             });
             websocket = new WebsocketClient(Uri, factory);
+            websocket.ErrorReconnectTimeout = TimeSpan.FromSeconds(10);
             websocket.ReconnectTimeout = null; //Disable weird reconnect timeout
             websocket.ReconnectionHappened.Subscribe(InternalOnReconnected);
             websocket.DisconnectionHappened.Subscribe(InternalOnDisconnected);

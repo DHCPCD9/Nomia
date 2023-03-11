@@ -19,6 +19,9 @@ public class LavalinkUtils
         using var ms = new MemoryStream(raw);
         using var br = new JavaBinaryReader(ms);
         
+        //Reading header stuff
+        br.ReadInt32();
+        
         var version = (int)br.ReadByte();
         if (version > 2) throw new Exception("Unsupported track version");
         
@@ -30,6 +33,12 @@ public class LavalinkUtils
 
         var uri = br.ReadNullableString();
         if (uri != null) track.Info.Uri = uri;
+
+        var source = br.ReadJavaUtf8();
+        if (source != null) track.Info.SourceName = source;
+        
+        var position = br.ReadInt64();
+        if (position > 0) track.Info._position = position;
         
         return track;
 

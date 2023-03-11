@@ -177,12 +177,13 @@ public class LavalinkTrackInfo
     /// </summary>
     [JsonProperty("isStream")]
     public bool IsStream { get; set; }
+
+    [JsonProperty("position")] internal long _position;
     
     /// <summary>
-    /// The track position in milliseconds
+    /// The track position
     /// </summary>
-    [JsonProperty("position")]
-    public string Position { get; set; }
+    public TimeSpan Position => TimeSpan.FromMilliseconds(_position);
     
     /// <summary>
     /// The track title

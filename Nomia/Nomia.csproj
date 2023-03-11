@@ -169,12 +169,8 @@
       </ProjectReference>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-    <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-         Other similar extension points exist, see Microsoft.Common.targets.
-    <Target Name="BeforeBuild">
+    <Target Name="Pack" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+        <Exec Command="nuget pack -Prop Configuration=Release -OutputDirectory $(OutputPath) -Symbols -SymbolPackageFormat snupkg $(ProjectPath)" />
     </Target>
-    <Target Name="AfterBuild">
-    </Target>
-    -->
 
 </Project>

@@ -21,6 +21,11 @@ namespace Nomia
             if (client is null) throw new ArgumentNullException(nameof(client));
         }
         
+        /// <summary>
+        /// Connects a node to the client.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void ConnectNode(NomiaNode node)
         {
             if (node is null) throw new ArgumentNullException(nameof(node));
@@ -28,12 +33,20 @@ namespace Nomia
             
         }
         
+        /// <summary>
+        /// Disconnects a node and removes it from the client.
+        /// </summary>
+        /// <param name="node">Node</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void DisconnectNode(NomiaNode node)
         {
             if (node is null) throw new ArgumentNullException(nameof(node));
-            Nodes.Remove(node);
+            node.Disconnect();
         }
-
+        
+        /// <summary>
+        /// Connects all nodes.
+        /// </summary>
         public async Task ConnectAllNodes()
         {
             foreach (var node in Nodes)
@@ -42,15 +55,31 @@ namespace Nomia
             }
         }
 
+        /// <summary>
+        /// Add a node to the client.
+        /// </summary>
+        /// <param name="nomiaNode">Node</param>
+        /// <exception cref="ArgumentNullException">Thrown when node is null.</exception>
         public void AddNode(NomiaNode nomiaNode)
         {
             if (nomiaNode is null) throw new ArgumentNullException(nameof(nomiaNode));
             Nodes.Add(nomiaNode);
         }
 
+        /// <summary>
+        /// Get the less loaded node.
+        /// </summary>
+        /// <returns></returns>
         public NomiaNode GetNode()
         {
-            return Nodes.FirstOrDefault();
+            if (!Nodes.Any() || Nodes.Any(c => c.IsReady)) throw new InvalidOperationException("No nodes are connected.");
+
+            return Nodes.Where(c => c.IsReady).OrderBy(x => x.Stats.PlayingPlayers).First();   
+        }
+
+        internal void RemoveNode(NomiaNode nomiaNode)
+        {
+            Nodes.Remove(nomiaNode);
         }
     }
 }

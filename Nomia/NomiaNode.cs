@@ -141,6 +141,11 @@ namespace Nomia
         /// </summary>
         internal DiscordClient Discord { get; }
         
+        /// <summary>
+        /// Resume key of the node.
+        /// </summary>
+        public string ResumeKey { get; set; }
+        
         internal NomiaNodeRest Rest { get; }
 
         private readonly AsyncEvent<NomiaNode, LavalinkClientExceptionEventArgs> _onException;
@@ -156,9 +161,11 @@ namespace Nomia
             new();
 
         internal Dictionary<ulong, LavalinkGuildConnection> Connections { get; } = new();
+        private bool _previouslyConnected = false;
+        private int _reconnectAttempts = 0;
 
         public NomiaNode(DiscordClient discord, NomiaEndpoint restEndpoint, NomiaEndpoint webSocketEndpoint,
-            string nodeName = "Nomia Node")
+            string nodeName = "Nomia Node", string resumeKey = null)
         {
             if (discord is null) throw new ArgumentNullException(nameof(discord));
             RestEndpoint = restEndpoint ?? throw new ArgumentNullException(nameof(restEndpoint));
@@ -167,6 +174,7 @@ namespace Nomia
             Discord = discord;
             _websocket = new NomiaWebsocket(WebSocketEndpoint.ToWebSocketString());
             NodeName = nodeName;
+            ResumeKey = resumeKey;
             Rest = new NomiaNodeRest(this);
 
             _onConnected = new AsyncEvent<NomiaNode, LavalinkNodeConnectedEventArgs>("LAVALINK_NODE_CONNECTED",
@@ -184,7 +192,13 @@ namespace Nomia
             _websocket.AddHeader("User-Id", discord.CurrentUser.Id.ToString());
             _websocket.AddHeader("Client-Name", "DHCPCD9/Nomia");
             
+            if (ResumeKey != null)
+            {
+                _websocket.AddHeader("Resume-Key", ResumeKey);
+            }
+            
             _websocket.OnConnected += websocketOnOnConnected;
+            _websocket.OnDisconnected += websocketOnOnDisconnected;
             
             _websocket.RegisterOp<LavalinkNodeReadyPayload>("ready", Websocket_NodeReady);
             _websocket.RegisterOp("event", Websocket_LavalinkEvent);
@@ -194,6 +208,15 @@ namespace Nomia
             discord.VoiceServerUpdated += Discord_ClientOnVoiceServerUpdated;
             discord.VoiceStateUpdated += Discord_ClientOnVoiceStateUpdated;
         }
+
+        private async Task websocketOnOnDisconnected(NomiaWebsocket sender, WebsocketDisconnectedEventArgs e)
+        {
+            Discord.Logger.LogWarning(
+                "Node {NodeName} disconnected, reconnecting in 5 seconds", NodeName);
+            await _onDisconnected.InvokeAsync(this, new LavalinkNodeDisconnectedEventArgs());
+        }
+
+ 
 
         private async Task Websocket_Stats(LavalinkStats stats)
         {
@@ -419,7 +442,17 @@ namespace Nomia
         {
             if (_websocket is not null && _websocket.IsConnected) return;
             //Running connection in background to prevent blocking.
-            await Task.Run(async () => { await _websocket.ConnectAsync(); });
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    await _websocket.ConnectAsync();
+                }
+                catch
+                {
+                    Discord.Logger.LogError(NomiaEvents.Lavalink, "Failed to connect to node {NodeName} ({ClientShardId})", NodeName, Discord.ShardId);
+                }
+            });
         }
 
         public override string ToString() => $"{NodeName} ({RestEndpoint})";
@@ -446,6 +479,11 @@ namespace Nomia
             };
             var queryRaw = $"{prefix}{query}";
             return await Rest.ResolveTracks(queryRaw);;
+        }
+
+        public void Disconnect()
+        {
+            _websocket.Dispose();
         }
     }
 }
