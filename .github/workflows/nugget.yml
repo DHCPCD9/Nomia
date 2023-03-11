@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+env:
+  VERSION: 1.0.${{ github.run_number }}
 jobs:
   publish:
     name: build, pack & publish
@@ -22,45 +24,8 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: Pack NuGet package
-        run: dotnet pack --configuration Release /p:Version=1.0.${{ github.run_number }}
+        run: dotnet pack --configuration Release /p:Version=${VERSION}
         
-      # Publish
-      - name: publish on version change
-        id: publish_nuget
-        uses: brandedoutcast/publish-nuget@v2
-        with:
-          # Filepath of the project to be packaged, relative to root of repository
-          PROJECT_FILE_PATH: Nomia/Nomia.csproj
+      - name: Push NuGet package
+        run: nuget push *.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
 
-          # Configuration to build and package
-          BUILD_CONFIGURATION: Release
-
-          # Platform target to compile (default is empty/AnyCPU)
-          BUILD_PLATFORM: x64
-
-          # NuGet package id, used for version detection & defaults to project name
-          PACKAGE_NAME: Nomia
-
-          # Filepath with version info, relative to root of repository & defaults to PROJECT_FILE_PATH
-          # VERSION_FILE_PATH: Directory.Build.props
-
-          # Regex pattern to extract version info in a capturing group
-          # VERSION_REGEX: ^\s*<Version>(.*)<\/Version>\s*$
-
-          # Useful with external providers like Nerdbank.GitVersioning, ignores VERSION_FILE_PATH & VERSION_REGEX
-          VERSION_STATIC: 1.0.${{ github.run_number }}
-
-          # Flag to toggle git tagging, enabled by default
-          TAG_COMMIT: true
-
-          # Format of the git tag, [*] gets replaced with actual version
-          TAG_FORMAT: v*
-
-          # API key to authenticate with NuGet server
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-
-          # NuGet server uri hosting the packages, defaults to https://api.nuget.org
-          NUGET_SOURCE: https://api.nuget.org
-
-          # Flag to toggle pushing symbols along with nuget package to the server, disabled by default
-          # INCLUDE_SYMBOLS: false
