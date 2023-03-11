@@ -21,11 +21,11 @@ jobs:
         run: dotnet restore
 
       - name: Build project
-        run: dotnet build Nomia/Nomia.csproj --configuration Release
+        run: dotnet build Nomia/Nomia.csproj --configuration Release -o build
 
       - name: Pack NuGet package
-        run: dotnet pack Nomia/Nomia.csproj --configuration Release /p:Version=${VERSION} 
+        run: dotnet pack Nomia/Nomia.csproj --configuration Release /p:Version=${VERSION} -o build
         
       - name: Push NuGet package
-        run: nuget push Nomia.${VERSION}.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
+        run: nuget push build/Nomia.${VERSION}.nupkg -ApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json
 
