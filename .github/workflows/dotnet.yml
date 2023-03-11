@@ -1,52 +1,48 @@
-name: .NET Docs
+name: Docs
+
 on:
-  release:
-    types:
-      - published
-  workflow_dispatch:
   push:
     branches:
-      - master
+    - main
     paths:
-      - 'docs/**'
-env:
-  DOTNET_NOLOGO: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: true
-permissions:
-  contents: write
+    - src/**
+    - docs/**
+    - .github/workflows/docs.yml
+  pull_request:
+    branches:
+    - main
+    paths:
+    - docs/**
+    - .github/workflows/docs.yml
+  workflow_dispatch:
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  generate-docs:
+
+    runs-on: windows-latest
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET 6.0
+      uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 7.0.103
-    - name: Install DocFX
-      run: dotnet tool install -g docfx
-      continue-on-error: true
-    - name: Build documentation
-      run: dotnet build && docfx docs/docfx.json && cd tools/Docs && dotnet run && cd ../../
-    - name: Upload GitHub Pages artifact
-      uses: actions/upload-pages-artifact@v1
+        dotnet-version: 6.0.x
+
+    - name: Setup DocFX
+      uses: crazy-max/ghaction-chocolatey@v1
       with:
-        # Path of the directory containing the static assets.
-        path: ./docs/_site/ # default is _site/
-  deploy:
-    # Add a dependency to the build job
-    needs: build
-    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
-    permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
-    # Deploy to the github-pages environment
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    # Specify runner + deployment step
-    runs-on: self-hosted
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v1
+        args: install docfx
+
+    - name: DocFX Build
+      working-directory: docs
+      run: docfx .\docfx.json
+      continue-on-error: false
+
+    - name: Publish
+      if: github.event_name == 'push'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: docs/_site
+        force_orphan: true
