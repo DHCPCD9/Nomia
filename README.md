@@ -6,11 +6,7 @@ Nomia is a lightweight and easy-to-use Lavalink wrapper that simplifies the proc
 ## Features
 
 - Lightweight and easy-to-use Lavalink wrapper.
-- Compatible with the Lavalink REST API V3.
 - Simplifies the process of integrating Lavalink audio playback into your Discord bot.
-
-## Why? 
-Because I cant wait like 9 years to merge my pull request in DSharpPlus, better way will be do it here instead of waiting for merge.
 
 ## Examples?
 You can find examples in [Nomia.Test](https://github.com/DHCPCD9/Nomia/tree/master/Nomia.Test) Package.
