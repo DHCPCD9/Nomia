@@ -74,7 +74,7 @@ namespace Nomia
         /// <returns></returns>
         public NomiaNode GetNode()
         {
-            if (!Nodes.Any() || Nodes.Any(c => c.IsReady)) throw new InvalidOperationException("No nodes are connected.");
+            if (!Nodes.Any() || !Nodes.Any(c => c.IsReady)) throw new InvalidOperationException("No nodes are connected.");
 
             return Nodes.Where(c => c.IsReady).OrderBy(x => x.Stats.PlayingPlayers).First();   
         }
