@@ -9,7 +9,7 @@ namespace Nomia.Test;
 public class Bot : IDisposable, IAsyncDisposable
 {
     
-    public DiscordClient Client { get; }
+    public DiscordShardedClient Client { get; }
 
     public Bot()
     {
@@ -19,7 +19,7 @@ public class Bot : IDisposable, IAsyncDisposable
             throw new Exception("No token provided");
         }
 
-        Client = new DiscordClient(new DiscordConfiguration
+        Client = new DiscordShardedClient(new DiscordConfiguration
         {
             Token = token,
             TokenType = TokenType.Bot,
@@ -27,47 +27,54 @@ public class Bot : IDisposable, IAsyncDisposable
             Intents = DiscordIntents.AllUnprivileged | DiscordIntents.MessageContents | DiscordIntents.GuildMembers
         });
 
-        Client.UseNomia();
-        
-        var cncfg = new CommandsNextConfiguration
-        {
-            StringPrefixes = new[] {"!"}
-        };
-       
-        var commands = Client.UseCommandsNext(cncfg);
-        commands.RegisterCommands(Assembly.GetExecutingAssembly());
         
         Client.Ready += ClientOnReady;
     }
 
     private async Task ClientOnReady(DiscordClient sender, ReadyEventArgs e)
     {
-        var nomia = sender.GetNomia();
-
-        var restEndpoint = new NomiaEndpoint("localhost", 2333, "youshallnotpass", "/v3");
-        var wsEndpoint = new NomiaEndpoint("localhost", 2333, "youshallnotpass", "/v3/websocket");
-        nomia.AddNode(new NomiaNode(Client, restEndpoint, wsEndpoint, "localhost"));
-
-        Task.Run(async () =>
-        {
-            await nomia.ConnectAllNodes();
-        });
-        
         Client.Logger.LogInformation("Bot is ready");
+        
+        var nomia = await Client.UseNomiaAsync();
+        
+        foreach (var (k, shard) in nomia)
+        {
+            
+            var restEndpoint = new NomiaEndpoint("localhost", 2333, "youshallnotpass", "/v3");
+            var wsEndpoint = new NomiaEndpoint("localhost", 2333, "youshallnotpass", "/v3/websocket");
+            shard.AddNode(new NomiaNode(restEndpoint, wsEndpoint));
+
+            await shard.ConnectAllNodes();
+        }
     }
 
     public void Dispose()
     {
-        Client.Dispose();
+        DisposeAsync().ConfigureAwait(false);
     }
 
     public async ValueTask DisposeAsync()
     {
-        Client.Dispose();
+        await Client.StopAsync();
     }
 
     public async Task Run()
     {
-        await Client.ConnectAsync();
+        var cncfg = new CommandsNextConfiguration
+        {
+            StringPrefixes = new[] {"!"}
+        };
+       
+        var commands = await Client.UseCommandsNextAsync(cncfg);
+        
+        foreach (var (k, commandShard) in commands)
+        {
+            commandShard.RegisterCommands(Assembly.GetExecutingAssembly());
+        }
+        
+    
+        
+        
+        await Client.StartAsync();
     }
 }

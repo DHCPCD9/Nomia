@@ -139,7 +139,7 @@ namespace Nomia
         /// <summary>
         /// Gets the discord client.
         /// </summary>
-        internal DiscordClient Discord { get; }
+        internal DiscordClient Discord { get; set; }
         
         /// <summary>
         /// Resume key of the node.
@@ -164,14 +164,12 @@ namespace Nomia
         private bool _previouslyConnected = false;
         private int _reconnectAttempts = 0;
 
-        public NomiaNode(DiscordClient discord, NomiaEndpoint restEndpoint, NomiaEndpoint webSocketEndpoint,
+        public NomiaNode(NomiaEndpoint restEndpoint, NomiaEndpoint webSocketEndpoint,
             string nodeName = "Nomia Node", string resumeKey = null)
         {
-            if (discord is null) throw new ArgumentNullException(nameof(discord));
             RestEndpoint = restEndpoint ?? throw new ArgumentNullException(nameof(restEndpoint));
             WebSocketEndpoint = webSocketEndpoint ?? throw new ArgumentNullException(nameof(webSocketEndpoint));
             
-            Discord = discord;
             _websocket = new NomiaWebsocket(WebSocketEndpoint.ToWebSocketString());
             NodeName = nodeName;
             ResumeKey = resumeKey;
@@ -188,8 +186,6 @@ namespace Nomia
             
 
             _websocket.AddHeader("Authorization", WebSocketEndpoint.Password);
-            _websocket.AddHeader("Num-Shards", discord.ShardCount.ToString());
-            _websocket.AddHeader("User-Id", discord.CurrentUser.Id.ToString());
             _websocket.AddHeader("Client-Name", "DHCPCD9/Nomia");
             
             if (ResumeKey != null)
@@ -204,9 +200,7 @@ namespace Nomia
             _websocket.RegisterOp("event", Websocket_LavalinkEvent);
             _websocket.RegisterOp("playerUpdate", Websocket_PlayerUpdate);
             _websocket.RegisterOp<LavalinkStats>("stats", Websocket_Stats);
-            
-            discord.VoiceServerUpdated += Discord_ClientOnVoiceServerUpdated;
-            discord.VoiceStateUpdated += Discord_ClientOnVoiceStateUpdated;
+
         }
 
         private async Task websocketOnOnDisconnected(NomiaWebsocket sender, WebsocketDisconnectedEventArgs e)
@@ -438,8 +432,20 @@ namespace Nomia
         }
 
 
-        public async Task ConnectNodeAsync()
+        internal async Task ConnectNodeAsync(DiscordClient client)
         {
+            
+            if (IsReady) return;
+            if (client is null) throw new ArgumentNullException(nameof(client));
+            if (client.CurrentUser is null) throw new InvalidOperationException("Client is not ready yet.");
+            
+            Discord = client;
+                        
+            _websocket.AddHeader("Num-Shards", Discord.ShardCount.ToString());
+            _websocket.AddHeader("User-Id", Discord.CurrentUser.Id.ToString());
+            Discord.VoiceServerUpdated += Discord_ClientOnVoiceServerUpdated;
+            Discord.VoiceStateUpdated += Discord_ClientOnVoiceStateUpdated;
+            
             if (_websocket is not null && _websocket.IsConnected) return;
             //Running connection in background to prevent blocking.
             await Task.Run(async () =>

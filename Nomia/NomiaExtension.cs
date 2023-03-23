@@ -19,6 +19,8 @@ namespace Nomia
         protected override void Setup(DiscordClient client)
         {
             if (client is null) throw new ArgumentNullException(nameof(client));
+            
+            Client = client;
         }
         
         /// <summary>
@@ -51,7 +53,7 @@ namespace Nomia
         {
             foreach (var node in Nodes)
             {
-                await node.ConnectNodeAsync();
+                await node.ConnectNodeAsync(Client).ConfigureAwait(false);
             }
         }
 
