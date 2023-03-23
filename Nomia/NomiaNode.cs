@@ -301,7 +301,7 @@ namespace Nomia
         /// <param name="payload">Payload to send.</param>
         internal void DiscordWsSendAsync(string payload)
         { 
-            var method = Discord.GetType().GetMethod("WsSendAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+            var method = Discord.GetType().GetMethod("SendRawPayloadAsync", BindingFlags.NonPublic | BindingFlags.Instance);
             
             method.Invoke(Discord, new object[] {payload});
         }
@@ -364,8 +364,8 @@ namespace Nomia
             //remove tasks
             _voiceStateUpdateTasks.Remove(channel.GuildId.Value);
             _voiceServerUpdateTasks.Remove(channel.GuildId.Value);
-            
-            GetPropertyValue(vsu.GetType(), vsu, "SessionId", out string sessionId);
+
+            var sessionId = vsu.SessionId;
             var endpoint = vsr.Endpoint;
             GetPropertyValue(vsr.GetType(), vsr, "VoiceToken", out string token);
             
