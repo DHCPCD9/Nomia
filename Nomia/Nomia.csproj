@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net7</TargetFramework>
+        <RootNamespace>Nomia</RootNamespace>
+        <TargetFramework>net6</TargetFramework>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
@@ -11,9 +12,6 @@
     <ItemGroup>
       <ProjectReference Include="..\Nomia.Websocket\Nomia.Websocket.csproj" />
     </ItemGroup>    
-
-    <Target Name="Pack" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
-        <Exec Command="nuget pack -Prop Configuration=Release -OutputDirectory $(OutputPath) -Symbols -SymbolPackageFormat snupkg $(ProjectPath)" />
-    </Target>
+    
 
 </Project>

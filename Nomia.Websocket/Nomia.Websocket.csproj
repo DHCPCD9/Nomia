@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net7</TargetFramework>
+        <TargetFramework>net6</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="Emzi0767.Common" Version="2.6.6" />
