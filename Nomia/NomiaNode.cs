@@ -441,8 +441,11 @@ namespace Nomia
             
             Discord = client;
                         
-            _websocket.AddHeader("Num-Shards", Discord.ShardCount.ToString());
-            _websocket.AddHeader("User-Id", Discord.CurrentUser.Id.ToString());
+            if (!_websocket.Headers.ContainsKey("Num-Shards"))
+                _websocket.AddHeader("Num-Shards", Discord.ShardCount.ToString());
+           
+            if (!_websocket.Headers.ContainsKey("User-Id"))
+                _websocket.AddHeader("User-Id", Discord.CurrentUser.Id.ToString());
             Discord.VoiceServerUpdated += Discord_ClientOnVoiceServerUpdated;
             Discord.VoiceStateUpdated += Discord_ClientOnVoiceStateUpdated;
             
