@@ -66,7 +66,7 @@ namespace Nomia
         public string ToWebSocketString() => $"ws{(IsSecure ? "s" : string.Empty)}://{Host}:{Port}{Route}";
     }
 
-    public sealed class NomiaNode
+    public sealed class NomiaNode : IDisposable
     {
         /// <summary>
         /// Gets the rest endpoint.
@@ -493,6 +493,11 @@ namespace Nomia
         public void Disconnect()
         {
             _websocket.Dispose();
+        }
+
+        public void Dispose()
+        {
+            _websocket?.Dispose();
         }
     }
 }

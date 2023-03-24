@@ -8,7 +8,7 @@ using Nomia.EventArgs;
 
 namespace Nomia
 {
-    public class NomiaExtension : BaseExtension
+    public class NomiaExtension : BaseExtension, IDisposable
     {
         public List<NomiaNode> Nodes { get; } = new();
         public event AsyncEventHandler<NomiaExtension, LavalinkNodeConnectedEventArgs> LavalinkNodeConnected; 
@@ -82,6 +82,14 @@ namespace Nomia
         internal void RemoveNode(NomiaNode nomiaNode)
         {
             Nodes.Remove(nomiaNode);
+        }
+
+        public void Dispose()
+        {
+            foreach (var node in Nodes)
+            {
+                node.Dispose();
+            }
         }
     }
 }
