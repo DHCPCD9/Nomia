@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
+using DSharpPlus.AsyncEvents;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using Emzi0767.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -175,14 +174,10 @@ namespace Nomia
             ResumeKey = resumeKey;
             Rest = new NomiaNodeRest(this);
 
-            _onConnected = new AsyncEvent<NomiaNode, LavalinkNodeConnectedEventArgs>("LAVALINK_NODE_CONNECTED",
-                TimeSpan.Zero, InternalHandleException);
-            _onDisconnected = new AsyncEvent<NomiaNode, LavalinkNodeDisconnectedEventArgs>("LAVALINK_NODE_DISCONNECTED",
-                TimeSpan.Zero, InternalHandleException);
-            _onException = new AsyncEvent<NomiaNode, LavalinkClientExceptionEventArgs>("LAVALINK_NODE_EXCEPTION",
-                TimeSpan.Zero, InternalHandleException);
-            _onReady = new AsyncEvent<NomiaNode, LavalinkNodeReadyEventArgs>("LAVALINK_NODE_READY",
-                TimeSpan.Zero, InternalHandleException);
+            _onConnected = new AsyncEvent<NomiaNode, LavalinkNodeConnectedEventArgs>("LAVALINK_NODE_CONNECTED", InternalHandleException);
+            _onDisconnected = new AsyncEvent<NomiaNode, LavalinkNodeDisconnectedEventArgs>("LAVALINK_NODE_DISCONNECTED", InternalHandleException);
+            _onException = new AsyncEvent<NomiaNode, LavalinkClientExceptionEventArgs>("LAVALINK_NODE_EXCEPTION", InternalHandleException);
+            _onReady = new AsyncEvent<NomiaNode, LavalinkNodeReadyEventArgs>("LAVALINK_NODE_READY", InternalHandleException);
             
 
             _websocket.AddHeader("Authorization", WebSocketEndpoint.Password);
