@@ -300,13 +300,7 @@ namespace Nomia
             
             method.Invoke(Discord, new object[] {payload});
         }
-        
-        private void GetPropertyValue<T>(Type type, object instance, string fieldName, out T value)
-        {
-            var field = type.GetProperty(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-            value = (T) field.GetValue(instance);
-        }
-        
+
         public async Task<LavalinkGuildConnection> ConnectAsync(DiscordChannel channel)
         {
             if (channel.Type != ChannelType.Voice && channel.Type != ChannelType.Stage) throw new ArgumentException("Channel must be a voice channel.", nameof(channel));
@@ -362,8 +356,8 @@ namespace Nomia
 
             var sessionId = vsu.SessionId;
             var endpoint = vsr.Endpoint;
-            GetPropertyValue(vsr.GetType(), vsr, "VoiceToken", out string token);
-            
+            var token = vsr.VoiceToken;
+
             //Creating player
             await Rest.UpdatePlayer(channel.GuildId.Value, new LavalinkPlayerUpdatePayload
             {
