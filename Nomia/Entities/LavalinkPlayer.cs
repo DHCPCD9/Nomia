@@ -278,12 +278,12 @@ public class LavalinkPlayerState
 
 
 
-    [JsonProperty("position")] internal int Position { get; }
+    [JsonProperty("position")] internal int position;
     
     /// <summary>
     /// The position of the track in milliseconds
     /// </summary>
-    public TimeSpan PositionTimeSpan => TimeSpan.FromMilliseconds(Position);
+    public TimeSpan Position => TimeSpan.FromMilliseconds(position);
 
     /// <summary>
     /// If Lavalink is connected to the voice gateway
