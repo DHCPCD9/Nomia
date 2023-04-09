@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emzi0767;
@@ -141,7 +142,7 @@ namespace Nomia.Websocket
             websocket.ReconnectionHappened.Subscribe(InternalOnReconnected);
             websocket.DisconnectionHappened.Subscribe(InternalOnDisconnected);
             websocket.MessageReceived.Subscribe(InternalOnMessage);
-            
+
             await websocket.Start().ConfigureAwait(false);
         }
 
@@ -231,23 +232,32 @@ namespace Nomia.Websocket
         {
             websocket?.Dispose();
         }
-        
+
         /// <summary>
         /// Sends a message to the websocket.
         /// </summary>
         /// <param name="message">message to send</param>
-        public void Send(string message)
+        /// <param name="instantly">Send the message instantly. (bypass queue)</param>
+        public void Send(string message, bool instantly = false)
         {
-            websocket.Send(message);
+            Send(Encoding.UTF8.GetBytes(message), instantly);
         }
-        
+
         /// <summary>
         /// Sends a message to the websocket.
         /// </summary>
         /// <param name="message">message to send</param>
-        public void Send(byte[] message)
+        /// <param name="instantly">Send the message instantly. (bypass queue)</param>
+        public void Send(byte[] message, bool instantly = false)
         {
-            websocket.Send(message);
+            if (instantly)
+            {
+                websocket.SendInstant(message);
+            }
+            else
+            {
+                websocket.Send(message);
+            }
         }
     }
 }
