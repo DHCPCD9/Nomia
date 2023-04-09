@@ -12,52 +12,77 @@ using Nomia.EventArgs.Player;
 
 namespace Nomia;
 
-public class LavalinkGuildConnection : IDisposable
+/// <summary>
+/// Represents a connection to a guild.
+/// </summary>
+public class LavalinkGuildConnection
 {
-        public event AsyncEventHandler<LavalinkGuildConnection, PlaybackStartedEventArgs> OnTrackStart
+    
+    /// <summary>
+    /// Fires when a track starts playing.
+    /// </summary>
+    public event AsyncEventHandler<LavalinkGuildConnection, PlaybackStartedEventArgs> OnTrackStart
     {
         add => _onTrackStart.Register(value);
         remove => _onTrackStart.Unregister(value);
     }
     
+    /// <summary>
+    /// Fires when a track finishes playing.
+    /// </summary>
     public event AsyncEventHandler<LavalinkGuildConnection, PlaybackFinishedEventArgs> OnTrackFinish
     {
         add => _onTrackFinish.Register(value);
         remove => _onTrackFinish.Unregister(value);
     }
     
+    /// <summary>
+    /// Fires when a track encounters an exception.
+    /// </summary>
     public event AsyncEventHandler<LavalinkGuildConnection, PlaybackExceptionEventArgs> OnTrackException
     {
         add => _onTrackException.Register(value);
         remove => _onTrackException.Unregister(value);
     }
     
+    /// <summary>
+    /// Fires when a track gets stuck.
+    /// </summary>
     public event AsyncEventHandler<LavalinkGuildConnection, PlaybackStuckEventArgs> OnTrackStuck
     {
         add => _onTrackStuck.Register(value);
         remove => _onTrackStuck.Unregister(value);
     }
     
+    /// <summary>
+    /// Fires when the player is updated.
+    /// </summary>
     public event AsyncEventHandler<LavalinkGuildConnection, PlayerUpdateEventArgs> OnPlayerUpdate
     {
         add => _onPlayerUpdate.Register(value);
         remove => _onPlayerUpdate.Unregister(value);
     }
     
+    /// <summary>
+    /// Fires when the player websocket is closed.
+    /// </summary>
     public event AsyncEventHandler<LavalinkGuildConnection, PlayerWebsocketClosedEventArgs> OnWebsocketClosed
     {
         add => _onPlayerWebsocketClosed.Register(value);
         remove => _onPlayerWebsocketClosed.Unregister(value);
     }
     
+    /// <summary>
+    /// Fires when the player encounters an internal error.
+    /// </summary>
     public event AsyncEventHandler<LavalinkGuildConnection, PlayerInternalError> OnPlayerError
     {
         add => _onPlayerError.Register(value);
         remove => _onPlayerError.Unregister(value);
     }
     
-    public VoiceServerUpdateEventArgs VoiceServerUpdateEventArgs { get; set; }
-    public VoiceStateUpdateEventArgs VoiceStateUpdateEventArgs { get; set; }
+    internal VoiceServerUpdateEventArgs VoiceServerUpdateEventArgs { get; set; }
+    internal VoiceStateUpdateEventArgs VoiceStateUpdateEventArgs { get; set; }
 
     /// <summary>
     /// The guild this player is connected to.
@@ -111,6 +136,11 @@ public class LavalinkGuildConnection : IDisposable
     }
 
 
+    /// <summary>
+    /// Plays a track.
+    /// </summary>
+    /// <param name="track">Track to play.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the node is not ready or the player is not connected.</exception>
     public async Task PlayAsync(LavalinkTrack track)
     {
         if (!_node.IsReady || !IsConnected)
@@ -124,6 +154,10 @@ public class LavalinkGuildConnection : IDisposable
         });
     }
     
+    /// <summary>
+    /// Stops the player. (Finishes the current track)
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the node is not ready or the player is not connected.</exception>
     public async Task StopAsync()
     {
         if (!_node.IsReady || !IsConnected)
@@ -137,6 +171,10 @@ public class LavalinkGuildConnection : IDisposable
         });
     }
     
+    /// <summary>
+    /// Pauses the player.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the node is not ready or the player is not connected.</exception>
     public async Task PauseAsync()
     {
         if (!_node.IsReady || !IsConnected)
@@ -150,6 +188,10 @@ public class LavalinkGuildConnection : IDisposable
         });
     }
     
+    /// <summary>
+    /// Resumes the player.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the node is not ready or the player is not connected.</exception>
     public async Task ResumeAsync()
     {
         if (!_node.IsReady || !IsConnected)
@@ -163,6 +205,11 @@ public class LavalinkGuildConnection : IDisposable
         });
     }
     
+    /// <summary>
+    /// Seeks to a position in the current track.
+    /// </summary>
+    /// <param name="position">Position to seek to.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the node is not ready or the player is not connected.</exception>
     public async Task SeekAsync(TimeSpan position)
     {
         if (!_node.IsReady || !IsConnected)
@@ -176,6 +223,11 @@ public class LavalinkGuildConnection : IDisposable
         });
     }
     
+    /// <summary>
+    /// Sets the volume of the player.
+    /// </summary>
+    /// <param name="volume">Volume to set.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the node is not ready or the player is not connected.</exception>
     public async Task SetVolumeAsync(int volume)
     {
         if (!_node.IsReady || !IsConnected)
@@ -189,6 +241,11 @@ public class LavalinkGuildConnection : IDisposable
         });
     }
     
+    /// <summary>
+    /// Sets the volume of the player using a filter.
+    /// </summary>
+    /// <param name="volume">Volume to set.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the node is not ready or the player is not connected.</exception>
     public async Task SetFilterVolumeAsync(int volume)
     {
         if (!_node.IsReady || !IsConnected)
@@ -205,6 +262,11 @@ public class LavalinkGuildConnection : IDisposable
         });
     }
     
+    /// <summary>
+    /// Sets the equalizer of the player.
+    /// </summary>
+    /// <param name="filter">Equalizer to set.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the node is not ready or the player is not connected.</exception>
     public async Task AddFilterAsync(ILavalinkFilter filter)
     {
         if (!_node.IsReady || !IsConnected)
@@ -229,6 +291,11 @@ public class LavalinkGuildConnection : IDisposable
         });
     }
     
+    /// <summary>
+    /// Removes a filter from the player.
+    /// </summary>
+    /// <param name="filter">Filter to remove.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the node is not ready or the player is not connected.</exception>
     public async Task RemoveFilterAsync(ILavalinkFilter filter)
     {
         if (!_node.IsReady || !IsConnected)
@@ -245,6 +312,10 @@ public class LavalinkGuildConnection : IDisposable
         });
     }
     
+    /// <summary>
+    /// Clears all filters from the player.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the node is not ready or the player is not connected.</exception>
     public async Task ClearFiltersAsync()
     {
         if (!_node.IsReady || !IsConnected)
@@ -265,13 +336,12 @@ public class LavalinkGuildConnection : IDisposable
         //Clearing the list
         Filters.Clear();
     }
+    
 
-
-    public void Dispose()
-    {
-        
-    }
-
+    /// <summary>
+    /// Disconnects the player from the voice channel.
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task DisconnectAsync()
     {
         if (!_node.IsReady || !IsConnected)

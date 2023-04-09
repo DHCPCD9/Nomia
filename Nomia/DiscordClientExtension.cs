@@ -10,6 +10,12 @@ namespace Nomia;
 
 public static class DiscordClientExtension
 {
+    /// <summary>
+    /// Enables Nomia for the client.
+    /// </summary>
+    /// <param name="client">Client to enable Nomia for.</param>
+    /// <returns>Nomia extension instance.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when Nomia is already enabled for that client.</exception>
     public static NomiaExtension UseNomia(this DiscordClient client)
     {
         if (client.GetExtension<NomiaExtension>() != null)
@@ -46,6 +52,11 @@ public static class DiscordClientExtension
         return new ReadOnlyDictionary<int, NomiaExtension>(modules);
     }
     
+    /// <summary>
+    /// Gets the Nomia extension for the client.
+    /// </summary>
+    /// <param name="client">Client to get extension for.</param>
+    /// <returns>Nomia extension instance.</returns>
     public static NomiaExtension GetNomia(this DiscordClient client)
         => client.GetExtension<NomiaExtension>();
     

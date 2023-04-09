@@ -7,6 +7,12 @@ namespace Nomia;
 
 public class LavalinkUtils
 {
+    /// <summary>
+    /// Decodes a track from Lavalink.
+    /// </summary>
+    /// <param name="encodedTrack"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
     public static LavalinkTrack DecodeTrack(string encodedTrack)
     {
         var raw = Convert.FromBase64String(encodedTrack);

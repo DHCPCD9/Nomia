@@ -15,8 +15,19 @@ namespace Nomia.Websocket
 {
     public class NomiaWebsocket : IDisposable
     {
+        /// <summary>
+        /// Fired when the websocket is connected.
+        /// </summary>
         public event AsyncEventHandler<NomiaWebsocket, WebsocketConnectedEventArgs> OnConnected;
+        
+        /// <summary>
+        /// Fired when the websocket is disconnected.
+        /// </summary>
         public event AsyncEventHandler<NomiaWebsocket, WebsocketDisconnectedEventArgs> OnDisconnected;
+        
+        /// <summary>
+        /// Fired when a message is received.
+        /// </summary>
         public event AsyncEventHandler<NomiaWebsocket, WebsocketMessageEventArgs> OnMessage;
         
         /// <summary>
@@ -219,6 +230,24 @@ namespace Nomia.Websocket
         public void Dispose()
         {
             websocket?.Dispose();
+        }
+        
+        /// <summary>
+        /// Sends a message to the websocket.
+        /// </summary>
+        /// <param name="message">message to send</param>
+        public void Send(string message)
+        {
+            websocket.Send(message);
+        }
+        
+        /// <summary>
+        /// Sends a message to the websocket.
+        /// </summary>
+        /// <param name="message">message to send</param>
+        public void Send(byte[] message)
+        {
+            websocket.Send(message);
         }
     }
 }
