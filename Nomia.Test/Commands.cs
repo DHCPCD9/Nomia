@@ -16,6 +16,7 @@ public class Commands : BaseCommandModule
     [Command("join")]
     public async Task Join(CommandContext ctx)
     {
+        await ctx.RespondAsync("Connecting...");
         var voiceState = ctx.Member?.VoiceState;
         if (voiceState == null)
         {
@@ -109,17 +110,44 @@ public class Commands : BaseCommandModule
         try
         {
             var player = await node.ConnectAsync(voiceChannel);
-            var tracks = await node.LoadTrackAsync(query);
-            var track = tracks.Tracks.FirstOrDefault();
+            var result = await node.LoadTrackAsync(query, LavalinkSearchType.Raw);
             
-            if (track is null)
+            if (result is LavalinkEmptyLoadType)
             {
                 await ctx.RespondAsync("No tracks found.");
                 return;
             }
+
+
+            LavalinkTrack track = null;
+            if (result is LavalinkTrackLoadedType loadedTrack)
+            {
+                track = loadedTrack.Data;
+            }
+
+            if (result is LavalinkSearchLoadedType loadedSearchResult)
+            {
+                await ctx.RespondAsync($"Found {loadedSearchResult.Tracks.Count} tracks.");
+                track = loadedSearchResult.Tracks.First();
+            }
+            
+            
+            if (result is LavalinkPlaylistLoadedType loadedPlaylist)
+            {
+                await ctx.RespondAsync($"Loaded playlist {loadedPlaylist.Data.Info.Name}");
+                track = loadedPlaylist.Data.Tracks.First();
+            }
+
+            if (track is null)
+            {
+                await ctx.RespondAsync("Looks like track has been loaded, but wasn't parsed");
+                return;
+            }
+            
             await player.PlayAsync(track);
             
             await ctx.RespondAsync($"Playing {track.Info}");
+
         }
         catch (Exception e)
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
@@ -27,31 +28,31 @@ public enum LavalinkLoadType
     /// <summary>
     /// Track loaded
     /// </summary>
-    [EnumMember(Value = "TRACK_LOADED")]
+    [EnumMember(Value = "track")]
     TrackLoaded,
     
     /// <summary>
     /// Playlist loaded
     /// </summary>
-    [EnumMember(Value = "PLAYLIST_LOADED")]
+    [EnumMember(Value = "playlist")]
     PlaylistLoaded,
     
     /// <summary>
     /// No matches found
     /// </summary>
-    [EnumMember(Value = "NO_MATCHES")]
+    [EnumMember(Value = "empty")]
     NoMatches,
     
     /// <summary>
     /// Load failed
     /// </summary>
-    [EnumMember(Value = "LOAD_FAILED")]
+    [EnumMember(Value = "error")]
     LoadFailed,
     
     /// <summary>
     /// Search result
     /// </summary>
-    [EnumMember(Value = "SEARCH_RESULT")]
+    [EnumMember(Value = "search")]
     SearchResult
 }
 
@@ -60,31 +61,31 @@ public enum LavalinkTrackEndReason
     /// <summary>
     /// Track has finished playing
     /// </summary>
-    [EnumMember(Value = "FINISHED")]
+    [EnumMember(Value = "finished")]
     Finished,
     
     /// <summary>
     /// Load failed
     /// </summary>
-    [EnumMember(Value = "LOAD_FAILED")]
+    [EnumMember(Value = "loadFailed")]
     LoadFailed,
     
     /// <summary>
     /// Track has been stopped
     /// </summary>
-    [EnumMember(Value = "STOPPED")]
+    [EnumMember(Value = "stopped")]
     Stopped,
     
     /// <summary>
     /// Track has been replaced
     /// </summary>
-    [EnumMember(Value = "REPLACED")]
+    [EnumMember(Value = "replaced")]
     Replaced,
     
     /// <summary>
     /// Track has been cleaned up
     /// </summary>
-    [EnumMember(Value = "CLEANUP")]
+    [EnumMember(Value = "cleanup")]
     Cleanup
 }
 
@@ -101,30 +102,147 @@ public class LavalinkTrack
     /// </summary>
     [JsonProperty("info")]
     public LavalinkTrackInfo Info { get; set; }
+    
+    /// <summary>
+    /// Additional track info provided by plugins
+    /// </summary>
+    [JsonProperty("pluginInfo")]
+    public object PluginInfo { get; set; }
+    
+    /// <summary>
+    /// Additional track data provided via the <see cref="https://lavalink.dev/api/rest#update-player">Update Player</see> endpoint
+    /// </summary>
+    [JsonProperty("userData")]
+    public object UserData { get; set; }
 }
 
 public class LavalinkPlaylistInfo {
+    /// <summary>
+    /// Name of playlist
+    /// </summary>
     [JsonProperty("name")]
     public string Name { get; set; }
+    /// <summary>
+    /// 0-indexed index of selected track
+    /// </summary>
     [JsonProperty("selectedTrack")]
     public int SelectedTrack { get; set; }
 }
 
+/// <summary>
+/// Lavalink exception object.
+/// </summary>
 public class LavalinkException
 {
+    /// <summary>
+    /// The message of the exception
+    /// </summary>
+    [JsonProperty("message")]
     public string Message { get; set; }
+    /// <summary>
+    /// The severity of the exception
+    /// </summary>
+    [JsonProperty("severity")]
     public string Severity { get; set; }
+    /// <summary>
+    /// The cause of the exception
+    /// </summary>
+    [JsonProperty("cause")]
     public string Cause { get; set; }
 }
 
-public class LavalinkLoadResult
+public class LavalinkTrackLoadedResult
+{
+    [JsonProperty("encoded")]
+    public String Encoded { get; }
+    
+    [JsonProperty("info")]
+    public LavalinkTrackInfo Info { get; }
+}
+
+/// <summary>
+/// Loadable response type from lavalink
+/// </summary>
+public class LavalinkLoadable
 {
     /// <summary>
     /// The type of the result
     /// </summary>
     [JsonProperty("loadType")]
     public LavalinkLoadType LoadType { get; set; }
-    
+}
+
+/// <summary>
+/// Lavalink load type that contains search response
+/// </summary>
+public class LavalinkSearchLoadedType : LavalinkLoadable
+{
+    [JsonProperty("data")]
+    public IReadOnlyList<LavalinkTrack> Tracks { get; set; }
+}
+
+
+public class LavalinkPlaylistLoadedData : LavalinkLoadable
+{
+    /// <summary>
+    /// Information about loaded playlist
+    /// </summary>
+    [JsonProperty("info")]
+    public LavalinkPlaylistInfo Info { get; set; }
+    /// <summary>
+    /// Additional information from plugins
+    /// </summary>
+    [JsonProperty("pluginInfo")]
+    public object PluginInfo { get; set; }
+    /// <summary>
+    /// Loaded tracks from playlist
+    /// </summary>
+    [JsonProperty("tracks")]
+    public IReadOnlyList<LavalinkTrack> Tracks { get; set; }
+}
+
+public class LavalinkPlaylistLoadedType : LavalinkLoadable
+{
+    /// <summary>
+    /// Information about loaded playlist
+    /// </summary>
+    [JsonProperty("data")]
+    public LavalinkPlaylistLoadedData Data { get; set; }
+}
+
+/// <summary>
+/// Contains response of successful track loading
+/// </summary>
+public class LavalinkTrackLoadedType : LavalinkLoadable
+{
+    /// <summary>
+    /// Loaded track.
+    /// </summary>
+    [JsonProperty("data")]
+    public LavalinkTrack Data { get; set; }
+}
+
+/// <summary>
+/// Lavalink object that contains exception of loaded track
+/// </summary>
+public class LavalinkLoadFailedType : LavalinkLoadable
+{
+    /// <summary>
+    /// Exception that was thrown by lavalink.
+    /// </summary>
+    [JsonProperty("data")]
+    public LavalinkException Data { get; set; }
+}
+
+/// <summary>
+/// Lavalink object with no data
+/// </summary>
+public class LavalinkEmptyLoadType : LavalinkLoadable
+{
+}
+
+public class LavalinkLoadResult
+{
     /// <summary>
     /// All tracks which have been loaded	
     /// </summary>
@@ -198,10 +316,22 @@ public class LavalinkTrackInfo
     public string Uri { get; set; }
     
     /// <summary>
+    /// The track artwork url
+    /// </summary>
+    [JsonProperty("artworkUrl")]
+    public string ArtworkUrl { get; set; }
+    
+    /// <summary>
+    /// The track <see cref="https://en.wikipedia.org/wiki/International_Standard_Recording_Code">ISRC</see>
+    /// </summary>
+    [JsonProperty("isrc")]
+    public string Isrc { get; set; }
+    
+    /// <summary>
     /// The track source name
     /// </summary>
     [JsonProperty("sourceName")]
     public string SourceName { get; set; }
-
+    
     public override string ToString() => $"[{SourceName}] {Title} by {Author}";
 }

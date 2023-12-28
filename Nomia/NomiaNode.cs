@@ -238,55 +238,49 @@ namespace Nomia
             {
                 throw new InvalidOperationException("Connection not found");
             }
+            
             var typeRaw = jObject["type"].Value<string>();
             Enum.TryParse(typeRaw, true, out LavalinkEventType type);
 
             if (type == LavalinkEventType.TrackStartEvent)
             {
-                var track = jObject["encodedTrack"].Value<string>();
+                var track = jObject.GetValue("track")!.ToObject<LavalinkTrack>();
                 
-                var trackInfo = LavalinkUtils.DecodeTrack(track);
-                
-                connection?._onTrackStart.InvokeAsync(connection, new PlaybackStartedEventArgs(trackInfo));
+                connection?._onTrackStart.InvokeAsync(connection, new PlaybackStartedEventArgs(track));
             }
             
             if (type == LavalinkEventType.TrackEndEvent)
             {
-                var track = jObject["encodedTrack"].Value<string>();
-                var reasonRaw = jObject["reason"].Value<string>();
+                var track = jObject.GetValue("track")!.ToObject<LavalinkTrack>();
+                var reasonRaw = jObject["reason"]!.Value<string>();
                 Enum.TryParse(reasonRaw, true, out LavalinkTrackEndReason reason);
                 
-                var trackInfo = LavalinkUtils.DecodeTrack(track);
-                
-                connection?._onTrackFinish.InvokeAsync(connection, new PlaybackFinishedEventArgs(trackInfo, reason));
+                connection?._onTrackFinish.InvokeAsync(connection, new PlaybackFinishedEventArgs(track, reason));
             }
             
             if (type == LavalinkEventType.TrackExceptionEvent)
             {
-                var track = jObject["encodedTrack"].Value<string>();
+                var track = jObject.GetValue("track")!.ToObject<LavalinkTrack>();
                 var error = jObject["exception"].Value<LavalinkException>();
                 
-                var trackInfo = LavalinkUtils.DecodeTrack(track);
-                
-                connection?._onTrackException.InvokeAsync(connection, new PlaybackExceptionEventArgs(trackInfo, error));
+                connection?._onTrackException.InvokeAsync(connection, new PlaybackExceptionEventArgs(track, error));
             }
             
             if (type == LavalinkEventType.TrackStuckEvent)
             {
-                var track = jObject["encodedTrack"].Value<string>();
+                var track = jObject.GetValue("track")!.ToObject<LavalinkTrack>();
                 var threshold = jObject["thresholdMs"].Value<int>();
                 
-                var trackInfo = LavalinkUtils.DecodeTrack(track);
-                
-                connection?._onTrackStuck.InvokeAsync(connection, new PlaybackStuckEventArgs(trackInfo, threshold));
+                connection?._onTrackStuck.InvokeAsync(connection, new PlaybackStuckEventArgs(track, threshold));
             }
             
             if (type == LavalinkEventType.WebSocketClosedEvent)
             {
-                var code = jObject["code"].Value<int>();
-                var reason = jObject["reason"].Value<string>();
+                var code = jObject.GetValue("code")!.Value<int>();
+                var reason = jObject.GetValue("reason")!.Value<string>();
+                var byRemote = jObject.GetValue("byRemote")!.ToObject<bool>();
                 
-                connection?._onPlayerWebsocketClosed.InvokeAsync(connection, new PlayerWebsocketClosedEventArgs(code, reason));
+                connection?._onPlayerWebsocketClosed.InvokeAsync(connection, new PlayerWebsocketClosedEventArgs(code, reason, byRemote));
             }
         }
 
@@ -466,7 +460,7 @@ namespace Nomia
             await connection.DisconnectAsync();
         }
 
-        public async Task<LavalinkLoadResult> LoadTrackAsync(string query, LavalinkSearchType searchType = LavalinkSearchType.Youtube)
+        public async Task<LavalinkLoadable> LoadTrackAsync(string query, LavalinkSearchType searchType = LavalinkSearchType.Youtube)
         {
             var prefix = searchType switch
             {

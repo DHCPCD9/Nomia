@@ -2,15 +2,12 @@
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Emzi0767;
 using Emzi0767.Utilities;
 using Newtonsoft.Json.Linq;
 using Nomia.Websocket.Entities;
 using Nomia.Websocket.EventArgs;
 using Websocket.Client;
-using Websocket.Client.Models;
 
 namespace Nomia.Websocket
 {

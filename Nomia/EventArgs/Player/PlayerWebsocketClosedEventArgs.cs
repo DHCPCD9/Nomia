@@ -14,10 +14,15 @@ public class PlayerWebsocketClosedEventArgs : AsyncEventArgs
     /// The close reason
     /// </summary>
     public string Reason { get; }
+    /// <summary>
+    /// Whether the connection was closed by Discord
+    /// </summary>
+    public bool ByRemote { get; }
     
-    public PlayerWebsocketClosedEventArgs(int code, string reason)
+    public PlayerWebsocketClosedEventArgs(int code, string reason, bool byRemote)
     {
         Code = code;
         Reason = reason;
+        ByRemote = byRemote;
     }
 }

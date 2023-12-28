@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Web;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Nomia.Entities;
+using Nomia.Exceptions;
 
 namespace Nomia;
 
@@ -32,7 +35,7 @@ public class NomiaNodeRest
     }
 
     #region Track resolvers
-    public async Task<LavalinkLoadResult> ResolveTracks(string query)
+    public async Task<LavalinkLoadable> ResolveTracks(string query)
     {
         var builder = new UriBuilder(new Uri(string.Format(LavalinkEndpoints.TRACK_RESOLVE, _httpClient.BaseAddress)));
         var queryBuilder = HttpUtility.ParseQueryString(builder.Query);
@@ -59,8 +62,19 @@ public class NomiaNodeRest
         {
             throw new Exception("Failed to resolve tracks: empty response");
         }
-        
-        return JsonConvert.DeserializeObject<LavalinkLoadResult>(json);
+
+        var responseObject = JsonConvert.DeserializeObject<JObject>(json);
+        var loadType = responseObject.GetValue("loadType")?.ToObject<LavalinkLoadType>();
+
+        return loadType switch
+        {
+            LavalinkLoadType.NoMatches => responseObject.ToObject<LavalinkEmptyLoadType>(),
+            LavalinkLoadType.LoadFailed => responseObject.ToObject<LavalinkLoadFailedType>(),
+            LavalinkLoadType.TrackLoaded => responseObject.ToObject<LavalinkTrackLoadedType>(),
+            LavalinkLoadType.SearchResult => responseObject.ToObject<LavalinkSearchLoadedType>(),
+            LavalinkLoadType.PlaylistLoaded => responseObject.ToObject<LavalinkPlaylistLoadedType>(),
+            _ => responseObject.ToObject<LavalinkEmptyLoadType>() 
+        };
     }
 
     #endregion
