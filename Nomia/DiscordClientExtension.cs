@@ -18,9 +18,6 @@ public static class DiscordClientExtension
     /// <exception cref="InvalidOperationException">Thrown when Nomia is already enabled for that client.</exception>
     public static NomiaExtension UseNomia(this DiscordClient client)
     {
-        if (client.GetExtension<NomiaExtension>() != null)
-            throw new InvalidOperationException("Lavalink is already enabled for that client.");
-
         if (!client.Intents.HasIntent(DiscordIntents.GuildVoiceStates))
             client.Logger.LogCritical(NomiaEvents.Intents, "The Lavalink extension is registered but the guild voice states intent is not enabled. It is highly recommended to enable it");
 
